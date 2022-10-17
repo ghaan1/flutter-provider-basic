@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Person {
+class Person { 
   final String name;
-  int age;
+  final int initialAge;
   Person({
     required this.name, 
-    required this.age
-    });
-}
-
-class Home {
-  final String city = "Portland";
-
-  Future<String> get fetchAddress {
-    final address = Future.delayed(const Duration(seconds: 5), () {
-      return '1234 North Commercial Ave.';
+    required this.initialAge
     });
 
-    return address;
+  Stream<String> get age async* {
+    var i = initialAge;
+    while (i < 85) {
+      await Future.delayed(Duration(seconds: 1), () {
+        i++;
+      });
+      yield i.toString();
+    }
   }
 }
 
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<Person>(
-          create: (context) => Person(name: 'Ghani', age: 20),
-        ),
-        FutureProvider(create: ((context) => Home().fetchAddress),
-        initialData: "Fetching Address",
-        )
-      ],
-    child: MyApp(),
+    StreamProvider<String>(
+      create: (_) => Person(name: 'Yohan', initialAge: 25).age,
+      initialData: 25.toString(),
+      catchError: (_, error) => error.toString(),
+      child: MyApp(),
     ),
   );
 }
@@ -59,16 +52,13 @@ class MyHomePage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center(
-          child: Consumer<Person>(
-            builder: (context, Person person, child) {
+          child: Consumer<String>(
+            builder: (context, String age, child) {
               return Column(
                 children: <Widget>[
-                  Text("User profile:"),
-                  Text("name: ${person.name}"),
-                  Text("age: ${person.age}"),
-                  Consumer<String>(builder: (context, String address, child) {
-                    return Text("address: $address");
-                  }),
+                  Text("Watch Yohan Age..."),
+                  Text("name: Yohan"),
+                  Text("age: $age"),
                 ],
               );
             },
